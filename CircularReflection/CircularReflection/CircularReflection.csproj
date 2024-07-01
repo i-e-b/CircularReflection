@@ -6,12 +6,17 @@
         <LangVersion>10</LangVersion>
         
         <IsPackable>true</IsPackable>
-        <Version>1.0.0</Version>
+        <Version>0.0.1</Version>
         <Title>CircularReflection</Title>
         <Authors>IEB</Authors>
         <Description>Allows circular reference to type definitions by re-writing sources</Description>
         <PackageTags>Reflection</PackageTags>
         <Copyright>Copyright ©Iain Ballard 2024</Copyright>
+        <readme>content\README.md</readme>
+        <PackageProjectUrl>https://github.com/i-e-b/CircularReflection</PackageProjectUrl>
+        <NuspecFile>CircularReflection.nuspec</NuspecFile>
+        <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
+        
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies> <!-- supply all dependency dlls -->
 
         <!-- This target will run when MSBuild is collecting the files to be packaged, and we'll implement it below. This property controls the dependency list for this packaging process, so by adding our custom property we hook ourselves into the process in a supported way. -->

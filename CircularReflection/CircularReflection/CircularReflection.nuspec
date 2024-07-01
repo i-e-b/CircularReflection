@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+    <metadata>
+        <id>CircularReflection</id>
+        <version>0.0.1</version>
+        <title>CircularReflection</title>
+        <authors>ieb</authors>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <!--<dependencies>
+            <group targetFramework="netstandard2.1" />
+        </dependencies>-->
+        <projectUrl>https://github.com/i-e-b/CircularReflection</projectUrl>
+        <description>Allows circular reference to type definitions by re-writing sources</description>
+        <copyright>Copyright ©Iain Ballard 2024</copyright>
+        <readme>content\README.md</readme>
+        <license type="file">content\LICENSE.txt</license>
+        <tags>Reflection</tags>
+    </metadata>
+    <files>
+        <file src="..\..\LICENSE.txt" target="content" />
+        <file src="..\..\README.md" target="content" />
+
+        <file src="bin\Debug\netstandard2.1\**\*.*" target="tasks\netstandard2.1" />
+        <file src="build\*.*" target="build" />
+    </files>
+</package>
