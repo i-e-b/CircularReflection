@@ -23,45 +23,85 @@ internal class AbstractifyRewriter : CSharpSyntaxRewriter
     public override SyntaxNode? VisitUsingDirective(UsingDirectiveSyntax node)
     {
         // Gather using directives together, and remove them from individual files
-        if (base.VisitUsingDirective(node) is UsingDirectiveSyntax next) UsingDirectives.Add(next.ToString());
+        if (base.VisitUsingDirective(node) is UsingDirectiveSyntax { Name: not null } next) UsingDirectives.Add(next.Name.ToString());
+
         return null;
     }
 
     public override SyntaxNode? VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
     {
         // Add a prefix to namespaces to prevent collisions
-        var next = base.VisitNamespaceDeclaration(node) as NamespaceDeclarationSyntax;
-        return next?.WithName(SyntaxFactory.ParseName("Reflection." + next.Name));
+        if (base.VisitNamespaceDeclaration(node) is not NamespaceDeclarationSyntax next) return null;
+        
+        return next
+            .WithName(SyntaxFactory.ParseName("Reflection." + next.Name));
     }
 
     public override SyntaxNode? VisitFileScopedNamespaceDeclaration(FileScopedNamespaceDeclarationSyntax node)
     {
         // Change file-scoped namespace to block-scoped (as we may be merging multiple files with namespaces)
-        var next = base.VisitFileScopedNamespaceDeclaration(node) as FileScopedNamespaceDeclarationSyntax;
-        if (next is null) return null;
+        if (base.VisitFileScopedNamespaceDeclaration(node) is not FileScopedNamespaceDeclarationSyntax next) return null;
 
         var scoped = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(" Reflection." + next.Name));
-        return scoped.WithOpenBraceToken(SyntaxFactory.ParseToken("{\r\n")).AddMembers(next.Members.ToArray());
+        
+        return scoped
+            .WithOpenBraceToken(SyntaxFactory.ParseToken("{\r\n"))
+            .AddMembers(next.Members.ToArray());
     }
 
     public override SyntaxNode? VisitClassDeclaration(ClassDeclarationSyntax node)
     {
         // Make classes `abstract`
-        var next = base.VisitClassDeclaration(node) as ClassDeclarationSyntax;
-        return next?.AddModifiers(SyntaxFactory.ParseToken("abstract "));
+        if (base.VisitClassDeclaration(node) is not ClassDeclarationSyntax next) return null;
+        
+        if (next.Modifiers.All(m => m.Text != "public" )) return null; // remove non-public classes
+
+        return next
+            .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.ParseToken("public "), SyntaxFactory.ParseToken("abstract "))) // replace all modifiers with `public abstract`
+            .WithBaseList(null); // remove base classes
+    }
+    
+    public override SyntaxNode? VisitArrowExpressionClause(ArrowExpressionClauseSyntax node)
+    {
+        return null; // Remove "expression bodies" from methods
+    }
+
+    public override SyntaxNode? VisitPropertyDeclaration(PropertyDeclarationSyntax node)
+    {
+        // If the property has an arrow expression body, we need to change it
+        if (base.VisitPropertyDeclaration(node) is not PropertyDeclarationSyntax next) return null;
+
+        if (next.AccessorList is null)
+        {
+            // add accessors, remove body/expression
+            return next
+                .WithExpressionBody(null)
+                .WithAccessorList(SyntaxFactory.AccessorList(
+                    SyntaxFactory.List(new List<AccessorDeclarationSyntax>
+                    {
+                        SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.ParseToken(";")),
+                        SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(SyntaxFactory.ParseToken(";"))
+                    })))
+                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None))
+                .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
+        }
+
+        return next;
     }
 
     public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
     {
         // Make all public methods 'public abstract', non-async. Remove non public methods.
-        var next = base.VisitMethodDeclaration(node) as MethodDeclarationSyntax;
-        if (next is null) return null;
+        if (base.VisitMethodDeclaration(node) is not MethodDeclarationSyntax next) return null;
 
+        if (next.Identifier.ToString() == "ToString") return null; // don't include string overrides
         if (next.Modifiers.All(m => m.Text != "public")) return null; // remove private methods
+        
         return next
             .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.ParseToken("public "), SyntaxFactory.ParseToken("abstract ")))
             .WithBody(null) // remove method body
-            .WithSemicolonToken(SyntaxFactory.ParseToken(";\r\n")); // add a semicolon: MyMethod(){...}  ->  MyMethod();
+            .WithSemicolonToken(SyntaxFactory.ParseToken(";")) // add a semicolon: MyMethod(){...}  ->  MyMethod();
+            .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
     }
 
     public override SyntaxNode? VisitFieldDeclaration(FieldDeclarationSyntax node)
@@ -81,13 +121,11 @@ internal class AbstractifyRewriter : CSharpSyntaxRewriter
 
     public override SyntaxNode? VisitRegionDirectiveTrivia(RegionDirectiveTriviaSyntax node)
     {
-        // Remove `#region ...` lines
-        return null;
+        return null; // Remove `#region ...` lines
     }
 
     public override SyntaxNode? VisitEndRegionDirectiveTrivia(EndRegionDirectiveTriviaSyntax node)
     {
-        // Remove `#endregion ...` lines
-        return null;
+        return null; // Remove `#endregion ...` lines
     }
 }

@@ -149,19 +149,53 @@ namespace Common.Containers {
     }
 }
 ");
+        files.Add("EdgeCases.cs", @"
+namespace SomethingElse;
+    public class AnnoyingClass: BaseClass, IHaveAnInterface
+    {
+        // Tricky case: expression bodied property
+        public string MyExpressionProperty => string.Empty;
+
+        // Method that is already abstract
+        public abstract string AbstractMethod();
+
+        // Expression bodied method
+        public void ExpressionMethod() => throw new NotARealException();
+
+        // Expression bodied method
+        public string? NullableMethod(string? input) {
+            return input ?? string.Empty;
+        }
+
+        // Method that is an override
+        public override string ToString(){
+            return string.Empty; // we can't remove the method, as we're taking off the base class
+        } 
+    }
+    
+    class IgnoreMe // Private class should not be exposed
+    {
+        public abstract void What();
+    }
+
+");
         
-        CircularReflectionTask.TransformFiles("C:\\sourceFiles", files, target);
+        CircularReflectionTask.TransformFiles("C:\\sourceFiles", "System.Threading.Task;CircularReflection;System.Diagnostics.CodeAnalysis", files, target);
 
         Console.WriteLine(target.Content.ToString());
 
         Assert.That(target.Content.ToString(), Is.EqualTo(@"// Generated from *.cs files in C:\sourceFiles
 // ReSharper disable All 
+#pragma nullable disable
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
+using System.Threading.Task;
+using CircularReflection;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CodeAnalysis.CSharp;
 using Namespace.Imported.In.Both.Files;
-using System.Threading.Task;
 
 // From 'File1.cs': 
 namespace Reflection.CircularReflection{
@@ -170,8 +204,7 @@ namespace Reflection.CircularReflection{
 /// </summary>
 [SuppressMessage(""ReSharper"", ""ClassNeverInstantiated.Global"")]
 [SuppressMessage(""ReSharper"", ""MemberCanBePrivate.Global"")]
-public abstract class CircularReflectionTask : Task
-{
+public abstract class CircularReflectionTask {
     /// <summary>
     /// The name of the class which is going to be generated
     /// </summary>
@@ -186,26 +219,36 @@ public abstract class CircularReflectionTask : Task
 public abstract bool Execute()
 ;
 }
-
-internal abstract class FileTarget : IFileTarget
-{
-public abstract void Append(string content) => File.AppendAllText(_path, content);
-}
 }
 
 // From 'File2.cs': 
 namespace Reflection.Common.Containers{
-
-    /// <summary>
-    /// Repeats an async task until disposed.
-    /// </summary>
-    public abstract abstract class AsyncRepeater : IDisposable
-    {
+public abstract class AsyncRepeater     {
 public abstract void Dispose()
 ;
     }
 }
 
+
+// From 'EdgeCases.cs': 
+namespace Reflection.SomethingElse{
+public abstract class AnnoyingClass    {
+        // Tricky case: expression bodied property
+        public string MyExpressionProperty {get;set;}
+public abstract string AbstractMethod();
+public abstract void ExpressionMethod() ;
+public abstract string? NullableMethod(string? input) ;
+    }
+}
+
+// Dummy namespaces, in case the 'using' imports are for implementation code only
+namespace System.Threading.Task { internal abstract class CircularReferenceStub { } }
+namespace CircularReflection { internal abstract class CircularReferenceStub { } }
+namespace System.Diagnostics.CodeAnalysis { internal abstract class CircularReferenceStub { } }
+namespace Microsoft.Build.Framework { internal abstract class CircularReferenceStub { } }
+namespace Microsoft.Build.Utilities { internal abstract class CircularReferenceStub { } }
+namespace Microsoft.CodeAnalysis.CSharp { internal abstract class CircularReferenceStub { } }
+namespace Namespace.Imported.In.Both.Files { internal abstract class CircularReferenceStub { } }
 "));
     }
 }

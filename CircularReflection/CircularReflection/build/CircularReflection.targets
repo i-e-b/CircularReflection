@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <!--A target that generates code, which is executed before the compilation-->
+    <!-- A target that generates code, which is executed before the compilation -->
     <Target Name="CircularReflectionTask" BeforeTargets="PrepareForBuild" Outputs="$(MSBuildProjectDirectory)\CircularReflection.generated.cs">
-        <CircularReflectionTask InputBaseName="$(InputBase)" OutputBaseName="$(OutputBase)">
+        <CircularReflectionTask InputBaseName="$(InputBase)" OutputBaseName="$(OutputBase)" AdditionalUsingPaths="$(AdditionalUsings)">
             <Output TaskParameter="GeneratedFile" PropertyName="GeneratedClassesFile" />
         </CircularReflectionTask>
         <ItemGroup>
@@ -11,7 +11,7 @@
         </ItemGroup>
     </Target>
 
-    <!--The generated file is deleted after a general clean. It will force the regeneration on rebuild-->
+    <!-- The generated file is deleted after a general clean. It will force the regeneration on rebuild -->
     <Target Name="AfterClean">
         <Delete Files="$(MSBuildProjectDirectory)\CircularReflection.generated.cs" />
     </Target>

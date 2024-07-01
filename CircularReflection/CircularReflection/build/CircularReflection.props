@@ -14,5 +14,6 @@
     <!--Task parameters default values, this can be overridden-->
     <PropertyGroup>
         <OutputBase Condition="'$(OutputBase)' == ''">$(MSBuildProjectDirectory)\obj\</OutputBase>
+        <AdditionalUsings Condition="'$(AdditionalUsings)' == ''"> </AdditionalUsings>
     </PropertyGroup>
 </Project>
