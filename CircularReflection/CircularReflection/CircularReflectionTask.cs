@@ -35,10 +35,16 @@ namespace CircularReflection;
 public class CircularReflectionTask : Task
 {
     /// <summary>
-    /// Base of the solution build
+    /// Location of files to rewrite into the current project
     /// </summary>
     [Required]
     public string InputBase { get; set; } = "";
+    
+    /// <summary>
+    /// Location of the project to write files into
+    /// </summary>
+    [Required]
+    public string OutputBase { get; set; } = "";
 
     /// <summary>
     /// The filename where the class was generated
@@ -51,10 +57,10 @@ public class CircularReflectionTask : Task
     /// </summary>
     public override bool Execute()
     {
-        if (!Directory.Exists(InputBase)) throw new Exception("Build base directory not found");
+        if (!Directory.Exists(InputBase)) throw new Exception("Rewriter input directory not found. Define 'InputBase' in your .csproj");
 
         var files = new FileSource(InputBase, "*.cs");
-        GeneratedFile = $"{InputBase}/obj/CircularReflection.generated.cs";
+        GeneratedFile = $"{OutputBase}/obj/CircularReflection.generated.cs";
 
         TransformFiles(InputBase, files, new FileTarget(GeneratedFile));
 
