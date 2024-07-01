@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -23,7 +24,20 @@ internal class AbstractifyRewriter : CSharpSyntaxRewriter
     public override SyntaxNode? VisitUsingDirective(UsingDirectiveSyntax node)
     {
         // Gather using directives together, and remove them from individual files
-        if (base.VisitUsingDirective(node) is UsingDirectiveSyntax { Name: not null } next) UsingDirectives.Add(next.Name.ToString());
+        if (base.VisitUsingDirective(node) is not UsingDirectiveSyntax { Name: not null } next) return null;
+
+        if (next.Alias is null) // normal `using my.namespace;`
+        {
+            var usingName = next.Name.ToString();
+
+            UsingDirectives.Add(usingName);
+        }
+        else // alias `using className = my.namespace.className;`
+        {
+            var bits = next.Name.ToString().Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+            UsingDirectives.Add(string.Join(".", bits[..^1]));
+        }
 
         return null;
     }

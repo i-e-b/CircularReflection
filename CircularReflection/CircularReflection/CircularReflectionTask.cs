@@ -125,7 +125,10 @@ public class CircularReflectionTask : Task
             header.AppendLine($"using {useDirective};"); // write the `using ...;` directive into the header
 
             // write a stub use of the namespace, to silence compiler problems for unused or internal usings
-            body.AppendLine($"namespace {useDirective} {{ internal abstract class CircularReferenceStub {{ }} }}");
+            if (!useDirective.Contains('='))
+            {
+                body.AppendLine($"namespace {useDirective} {{ internal abstract class CircularReferenceStub {{ }} }}");
+            }
         }
         
         dst.Append(header.ToString());

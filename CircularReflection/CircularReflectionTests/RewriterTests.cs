@@ -150,6 +150,7 @@ namespace Common.Containers {
 }
 ");
         files.Add("EdgeCases.cs", @"
+using Client = Somewhere.Specific.Client; // disambiguation of overused names
 namespace SomethingElse;
     public class AnnoyingClass: BaseClass, IHaveAnInterface
     {
@@ -195,6 +196,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CodeAnalysis.CSharp;
 using Namespace.Imported.In.Both.Files;
+using Somewhere.Specific;
 
 // From 'File1.cs': 
 namespace Reflection.CircularReflection{
@@ -246,6 +248,7 @@ namespace Microsoft.Build.Framework { internal abstract class CircularReferenceS
 namespace Microsoft.Build.Utilities { internal abstract class CircularReferenceStub { } }
 namespace Microsoft.CodeAnalysis.CSharp { internal abstract class CircularReferenceStub { } }
 namespace Namespace.Imported.In.Both.Files { internal abstract class CircularReferenceStub { } }
+namespace Somewhere.Specific { internal abstract class CircularReferenceStub { } }
 "));
     }
 }
