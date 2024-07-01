@@ -6,7 +6,7 @@
         <LangVersion>10</LangVersion>
         
         <IsPackable>true</IsPackable>
-        <Version>0.0.4</Version>
+        <Version>0.0.5</Version>
         <Title>CircularReflection</Title>
         <Authors>IEB</Authors>
         <Description>Allows circular reference to type definitions by re-writing sources</Description>
@@ -32,7 +32,7 @@
         
         <!-- Tell the SDK to generate a deps.json file -->
         <GenerateDependencyFile>true</GenerateDependencyFile>
-        <AssemblyVersion>0.0.4</AssemblyVersion>
+        <AssemblyVersion>0.0.5</AssemblyVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

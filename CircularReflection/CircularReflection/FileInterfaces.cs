@@ -36,11 +36,11 @@ internal interface IFileProxy
 
 internal class FileSource: IFileSource
 {
-    private readonly string[] _paths;
+    private readonly List<string> _paths = new();
 
-    public FileSource(string basePath, string pattern)
+    public void AddDirectory(string basePath, string pattern)
     {
-        _paths = Directory.GetFiles(basePath, pattern);
+        _paths.AddRange(Directory.GetFiles(basePath, pattern));
     }
 
     public IEnumerable<IFileProxy> GetFiles() => _paths.Select(p=> new FileProxy(p));

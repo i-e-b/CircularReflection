@@ -67,19 +67,31 @@ public class CircularReflectionTask : Task
     /// </summary>
     public override bool Execute()
     {
-        if (!Directory.Exists(InputBaseName)) throw new Exception("Rewriter input directory not found. Define 'InputBase' in your .csproj");
+        var target = new FileTarget(GeneratedFile);
 
-        var files = new FileSource(InputBaseName, "*.cs");
-        GeneratedFile = $"{OutputBaseName}/CircularReflection.generated.cs";
+        var paths = InputBaseName.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        var files = new FileSource();
 
-        TransformFiles(InputBaseName, AdditionalUsingPaths, files, new FileTarget(GeneratedFile));
+        foreach (var inputPath in paths)
+        {
+            if (string.IsNullOrWhiteSpace(inputPath)) continue;
+            
+            if (!Directory.Exists(inputPath))
+            {
+                Log.LogWarning($"CircularReflection task: Source directory not found: '{inputPath}'");
+                continue;
+            }
 
-        Log.LogWarning($"Task ran ok; {InputBaseName} -> {GeneratedFile};");
-
+            files.AddDirectory(inputPath, "*.cs");
+            GeneratedFile = $"{OutputBaseName}/CircularReflection.generated.cs";
+        }
+        
+        TransformFiles(InputBaseName, AdditionalUsingPaths, files, target);
+        Log.LogMessage($"CircularReflection task ran ok; {InputBaseName} -> {GeneratedFile};");
         return true;
     }
 
-    internal static void TransformFiles(string basePath, string additionalUsings, IFileSource src, IFileTarget dst)
+    internal static void TransformFiles(string basePaths, string additionalUsings, IFileSource src, IFileTarget dst)
     {
         var rewriter = new AbstractifyRewriter();
 
@@ -92,9 +104,8 @@ public class CircularReflectionTask : Task
 
         var body = new StringBuilder();
         var header = new StringBuilder();
-        header.Append($"// Generated from *.cs files in {basePath}\r\n");
+        header.Append($"// Generated from *.cs files in {basePaths}\r\n");
         header.Append("// ReSharper disable All \r\n"); // turn off ReSharper for the file
-        header.Append("#pragma nullable disable\r\n"); // turn null testing off
         header.Append("#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member\r\n"); // just in case
         header.Append("#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor\r\n"); // suppress null warning
         foreach (var fileInfo in src.GetFiles())

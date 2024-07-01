@@ -100,6 +100,7 @@ internal class AbstractifyRewriter : CSharpSyntaxRewriter
         return next
             .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.ParseToken("public "), SyntaxFactory.ParseToken("abstract ")))
             .WithBody(null) // remove method body
+            .WithoutTrivia()
             .WithSemicolonToken(SyntaxFactory.ParseToken(";")) // add a semicolon: MyMethod(){...}  ->  MyMethod();
             .WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed);
     }

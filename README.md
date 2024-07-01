@@ -5,7 +5,7 @@ MSBuild task that re-writes classes as abstract definitions, to allow circular r
 This is useful for:
 - Auto-generation of references (such as URLs from ASPNet)
 - Making `nameof(...)` references
-- Making `<see cref="..."/>` references
+- Making `<see cref="..."/>` references in doc comments
 
 ## Applying the build task to your project
 
@@ -16,7 +16,7 @@ This is useful for:
 ```xml
     <PropertyGroup>
         <!-- CircularReflection settings -->
-        <InputBase>$(MSBuildProjectDirectory)\..\SourceProject\CsFileDirectory</InputBase>
+        <ReflectionInputBase>$(MSBuildProjectDirectory)\..\SourceProject\CsFileDirectory</ReflectionInputBase>
     </PropertyGroup>
 ```
 
@@ -32,16 +32,28 @@ If you are referencing files between different targets, you may need to include 
 ```xml
     <PropertyGroup>
         <!-- CircularReflection settings -->
-        <AdditionalUsings>System;System.Collections.Generic;System.Threading.Tasks;</AdditionalUsings>
+        <ReflectionAdditionalUsings>System;System.Collections.Generic;System.Threading.Tasks;</ReflectionAdditionalUsings>
     </PropertyGroup>
 ```
+
+## Generated files
+
+The generated files are written to the project's `obj` directory
+in a file named `CircularReflection.generated.cs`.
+This will be linked into the sources as part of the build.
+
+If required, the output can be moved with the `ReflectionOutputBase` setting
 
 # Development of the package
 
 ## Building the NuGet package
 
+First, **always** do a clean and rebuild.
+
+Update the versions to match in the project properties ( assembly and nuget), and the nuspec file.
+
 Open a terminal in the directory of `CircularReflection.csproj`,
-and run the command `dotnet pack -o .`.
+and run the command `dotnet pack -o ..`.
 
 ## References
 

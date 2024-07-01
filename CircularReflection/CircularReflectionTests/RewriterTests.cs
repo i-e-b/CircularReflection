@@ -186,7 +186,6 @@ namespace SomethingElse;
 
         Assert.That(target.Content.ToString(), Is.EqualTo(@"// Generated from *.cs files in C:\sourceFiles
 // ReSharper disable All 
-#pragma nullable disable
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor
 using System.Threading.Task;
@@ -216,16 +215,14 @@ public abstract class CircularReflectionTask {
     /// </summary>
     [Output]
     public int GeneratedFile { get; set; }
-public abstract bool Execute()
-;
+public abstract bool Execute();
 }
 }
 
 // From 'File2.cs': 
 namespace Reflection.Common.Containers{
 public abstract class AsyncRepeater     {
-public abstract void Dispose()
-;
+public abstract void Dispose();
     }
 }
 
@@ -237,7 +234,7 @@ public abstract class AnnoyingClass    {
         public string MyExpressionProperty {get;set;}
 public abstract string AbstractMethod();
 public abstract void ExpressionMethod() ;
-public abstract string? NullableMethod(string? input) ;
+public abstract string? NullableMethod(string? input);
     }
 }
 
