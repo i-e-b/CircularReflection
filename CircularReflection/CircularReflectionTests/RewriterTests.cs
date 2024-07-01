@@ -1,0 +1,248 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using CircularReflection;
+using NUnit.Framework;
+
+namespace CircularReflectionTests;
+
+[TestFixture]
+public class RewriterTests
+{
+    [Test]
+    public void can_rewrite_csharp_files()
+    {
+        var target = new TestFileOutput();
+        var files = new TestFileInput();
+
+        files.Add("File1.cs", @"
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Microsoft.CodeAnalysis.CSharp;
+using Namespace.Imported.In.Both.Files;
+
+namespace CircularReflection;
+/// <summary>
+/// MSBuild task that re-writes C# files into <c>abstract</c> definitions.
+/// </summary>
+[SuppressMessage(""ReSharper"", ""ClassNeverInstantiated.Global"")]
+[SuppressMessage(""ReSharper"", ""MemberCanBePrivate.Global"")]
+public class CircularReflectionTask : Task
+{
+    /// <summary>
+    /// The name of the class which is going to be generated
+    /// </summary>
+    [Required]
+    public int BuildBase { get; set; }
+
+    /// <summary>
+    /// The filename where the class was generated
+    /// </summary>
+    [Output]
+    public int GeneratedFile { get; set; }
+
+    /// <summary>
+    /// Run the MSBuild task
+    /// </summary>
+    public override bool Execute()
+    {
+        if (!Directory.Exists(BuildBase)) throw new Exception();
+        return true;
+    }
+
+    internal static void TransformFiles(IFileSource src, IFileTarget dst)
+    {
+        // Should be removed, as it's not public
+        var rewriter = new AbstractifyRewriter();
+        var body = new StringBuilder();
+        var header = new StringBuilder();
+        
+        dst.Append(header.ToString());
+        dst.Append(body.ToString());
+    }
+}
+
+internal class FileTarget : IFileTarget
+{
+    private readonly string _path;
+
+    public FileTarget(string path)
+    {
+        _path = path;
+        File.Delete(path);
+    }
+
+    public void Append(string content) => File.AppendAllText(_path, content);
+}
+");
+        files.Add("File2.cs", @"
+using System.Threading.Task;
+using Namespace.Imported.In.Both.Files;
+
+namespace Common.Containers {
+
+    /// <summary>
+    /// Repeats an async task until disposed.
+    /// </summary>
+    public abstract class AsyncRepeater : IDisposable
+    {
+        /// <summary>
+        /// Run the periodic task.
+        /// This should return the delay until the next run.
+        /// </summary>
+        protected abstract Task<TimeSpan> PeriodicTask();
+
+        private readonly CancellationTokenSource _tokenSource = new();
+        
+        /// <summary>
+        /// Create a repeater
+        /// </summary>
+        protected AsyncRepeater() { Task.Run(async () => { await TaskLoop(); }); }
+
+        /// <summary>
+        /// Dispose of resources if <c>using</c> was neglected.
+        /// </summary>
+        ~AsyncRepeater() => Dispose();
+
+        /// <summary>
+        /// Stop repeating, and dispose of any resources
+        /// </summary>
+        public void Dispose()
+        {
+            _tokenSource.Cancel();
+            DisposeInternal();
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Override to release resources.
+        /// </summary>
+        protected virtual void DisposeInternal() { }
+
+        private async Task TaskLoop()
+        {
+            Log.Info($""Repeating task started: {GetType().Name}"");
+            while (!_tokenSource.Token.IsCancellationRequested)
+            {
+                try
+                {
+                    var delay = await PeriodicTask();
+
+                    if (delay < TimeSpan.FromMinutes(1))
+                    {
+                        await Task.Delay(delay, _tokenSource.Token);
+                    }
+                    else
+                    {
+                        Log.Warn($""Repeating task '{GetType().Name}' requested abnormal delay time: {delay}"");
+                        await Task.Delay(TimeSpan.FromSeconds(10), _tokenSource.Token);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($""Failure in periodic task of AsyncRepeater {GetType().Name}"", ex);
+                    await Task.Delay(TimeSpan.FromSeconds(10), _tokenSource.Token);
+                }
+            }
+            Log.Info($""Repeating task ended: {GetType().Name}"");
+        }
+    }
+}
+");
+        
+        CircularReflectionTask.TransformFiles("C:\\sourceFiles", files, target);
+
+        Console.WriteLine(target.Content.ToString());
+
+        Assert.That(target.Content.ToString(), Is.EqualTo(@"// Generated from *.cs files in C:\sourceFiles
+// ReSharper disable All 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
+using Microsoft.CodeAnalysis.CSharp;
+using Namespace.Imported.In.Both.Files;
+using System.Threading.Task;
+
+// From 'File1.cs': 
+namespace Reflection.CircularReflection{
+/// <summary>
+/// MSBuild task that re-writes C# files into <c>abstract</c> definitions.
+/// </summary>
+[SuppressMessage(""ReSharper"", ""ClassNeverInstantiated.Global"")]
+[SuppressMessage(""ReSharper"", ""MemberCanBePrivate.Global"")]
+public abstract class CircularReflectionTask : Task
+{
+    /// <summary>
+    /// The name of the class which is going to be generated
+    /// </summary>
+    [Required]
+    public int BuildBase { get; set; }
+
+    /// <summary>
+    /// The filename where the class was generated
+    /// </summary>
+    [Output]
+    public int GeneratedFile { get; set; }
+public abstract bool Execute()
+;
+}
+
+internal abstract class FileTarget : IFileTarget
+{
+public abstract void Append(string content) => File.AppendAllText(_path, content);
+}
+}
+
+// From 'File2.cs': 
+namespace Reflection.Common.Containers{
+
+    /// <summary>
+    /// Repeats an async task until disposed.
+    /// </summary>
+    public abstract abstract class AsyncRepeater : IDisposable
+    {
+public abstract void Dispose()
+;
+    }
+}
+
+"));
+    }
+}
+
+class TestFileOutput : IFileTarget
+{
+    public readonly StringBuilder Content = new();
+    
+    public void Append(string content)
+    {
+        Content.Append(content);
+    }
+}
+
+class TestFileInput : IFileSource
+{
+    private readonly List<IFileProxy> _files = new();
+    
+    public void Add(string path, string content)
+    {
+        _files.Add(new TestFile(path, content));
+    }
+
+    public IEnumerable<IFileProxy> GetFiles()
+    {
+        return _files;
+    }
+
+    class TestFile : IFileProxy
+    {
+        public TestFile(string path, string content)
+        {
+            BodyText = content;
+            Path = path;
+        }
+
+        public string BodyText { get; }
+        public string Path { get; }
+    }
+}

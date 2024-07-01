@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!--Defining all the text files input parameters-->
+    <ItemGroup>
+        <SettingFiles Include="$(RootFolder)\*.$(SettingExtensionFile)" />
+    </ItemGroup>
+
+    <!--A target that generates code, which is executed before the compilation-->
+    <Target Name="CircularReflectionTask" BeforeTargets="PrepareForBuild" Outputs="$(MSBuildProjectDirectory)\CircularReflection.generated.cs">
+        <CircularReflectionTask InputBase="$(MSBuildProjectDirectory)">
+            <Output TaskParameter="GeneratedFile" PropertyName="GeneratedClassesFile" />
+        </CircularReflectionTask>
+        <ItemGroup>
+            <Compile Remove="$(GeneratedClassesFile)" />
+            <Compile Include="$(GeneratedClassesFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!--The generated file is deleted after a general clean. It will force the regeneration on rebuild-->
+    <Target Name="AfterClean">
+        <Delete Files="$(MSBuildProjectDirectory)\CircularReflection.generated.cs" />
+    </Target>
+</Project>
