@@ -67,8 +67,6 @@ public class CircularReflectionTask : Task
     /// </summary>
     public override bool Execute()
     {
-        var target = new FileTarget(GeneratedFile);
-
         var paths = InputBaseName.Split(';', StringSplitOptions.RemoveEmptyEntries);
         var files = new FileSource();
 
@@ -83,10 +81,13 @@ public class CircularReflectionTask : Task
             }
 
             files.AddDirectory(inputPath, "*.cs");
-            GeneratedFile = $"{OutputBaseName}/CircularReflection.generated.cs";
         }
         
+        GeneratedFile = $"{OutputBaseName}/CircularReflection.generated.cs";
+        var target = new FileTarget(GeneratedFile);
+        
         TransformFiles(InputBaseName, AdditionalUsingPaths, files, target);
+        
         Log.LogMessage($"CircularReflection task ran ok; {InputBaseName} -> {GeneratedFile};");
         return true;
     }
