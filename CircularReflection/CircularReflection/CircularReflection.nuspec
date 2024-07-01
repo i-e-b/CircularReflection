@@ -2,7 +2,7 @@
 <package >
     <metadata>
         <id>CircularReflection</id>
-        <version>0.0.7</version>
+        <version>1.0.0</version>
         <title>CircularReflection</title>
         <authors>ieb</authors>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>

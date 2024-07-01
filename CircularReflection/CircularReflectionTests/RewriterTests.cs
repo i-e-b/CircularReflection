@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using CircularReflection;
 using NUnit.Framework;
@@ -9,6 +10,13 @@ namespace CircularReflectionTests;
 [TestFixture]
 public class RewriterTests
 {
+    [Test]
+    public void path_test()
+    {
+        // C:\code\datawaterfall\DataWaterfallModels\..\State\Controllers;C:\code\datawaterfall\DataWaterfallModels\..\Command\Controllers
+        Console.WriteLine(Path.GetFullPath("C:\\code\\datawaterfall\\DataWaterfallModels\\..\\State\\Controllers"));
+    }
+
     [Test]
     public void can_rewrite_csharp_files()
     {
@@ -185,7 +193,7 @@ namespace SomethingElse;
 
         Console.WriteLine(target.Content.ToString());
 
-        Assert.That(target.Content.ToString(), Is.EqualTo(@"// Generated from *.cs files in C:\sourceFiles
+        Assert.That(target.Content.ToString(), Is.EqualTo(@"// Generated from *.cs files in: C:\sourceFiles
 // ReSharper disable All 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor

@@ -74,7 +74,7 @@ public class CircularReflectionTask : Task
         {
             if (string.IsNullOrWhiteSpace(inputPath)) continue;
             
-            if (!Directory.Exists(inputPath))
+            if (!Directory.Exists(Path.GetFullPath(inputPath)))
             {
                 Log.LogWarning($"CircularReflection task: Source directory not found: '{inputPath}'");
                 continue;
@@ -105,7 +105,7 @@ public class CircularReflectionTask : Task
 
         var body = new StringBuilder();
         var header = new StringBuilder();
-        header.Append($"// Generated from *.cs files in {basePaths}\r\n");
+        header.Append($"// Generated from *.cs files in: {basePaths}\r\n");
         header.Append("// ReSharper disable All \r\n"); // turn off ReSharper for the file
         header.Append("#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member\r\n"); // just in case
         header.Append("#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor\r\n"); // suppress null warning
