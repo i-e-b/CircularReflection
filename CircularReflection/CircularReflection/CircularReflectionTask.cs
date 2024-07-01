@@ -38,13 +38,13 @@ public class CircularReflectionTask : Task
     /// Location of files to rewrite into the current project
     /// </summary>
     [Required]
-    public string InputBase { get; set; } = "";
+    public string InputBaseName { get; set; } = "";
     
     /// <summary>
     /// Location of the project to write files into
     /// </summary>
     [Required]
-    public string OutputBase { get; set; } = "";
+    public string OutputBaseName { get; set; } = "";
 
     /// <summary>
     /// The filename where the class was generated
@@ -57,14 +57,14 @@ public class CircularReflectionTask : Task
     /// </summary>
     public override bool Execute()
     {
-        if (!Directory.Exists(InputBase)) throw new Exception("Rewriter input directory not found. Define 'InputBase' in your .csproj");
+        if (!Directory.Exists(InputBaseName)) throw new Exception("Rewriter input directory not found. Define 'InputBase' in your .csproj");
 
-        var files = new FileSource(InputBase, "*.cs");
-        GeneratedFile = $"{OutputBase}/obj/CircularReflection.generated.cs";
+        var files = new FileSource(InputBaseName, "*.cs");
+        GeneratedFile = $"{OutputBaseName}/obj/CircularReflection.generated.cs";
 
-        TransformFiles(InputBase, files, new FileTarget(GeneratedFile));
+        TransformFiles(InputBaseName, files, new FileTarget(GeneratedFile));
 
-        Log.LogWarning($"Task ran ok; {InputBase} -> {GeneratedFile};");
+        Log.LogWarning($"Task ran ok; {InputBaseName} -> {GeneratedFile};");
 
         return true;
     }
