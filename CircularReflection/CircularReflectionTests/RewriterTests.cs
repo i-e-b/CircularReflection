@@ -213,7 +213,7 @@ namespace Reflection.CircularReflection{
 /// </summary>
 [SuppressMessage(""ReSharper"", ""ClassNeverInstantiated.Global"")]
 [SuppressMessage(""ReSharper"", ""MemberCanBePrivate.Global"")]
-public abstract class CircularReflectionTask {
+internal abstract class CircularReflectionTask {
     /// <summary>
     /// The name of the class which is going to be generated
     /// </summary>
@@ -231,7 +231,7 @@ public abstract bool Execute();
 
 // From 'File2.cs': 
 namespace Reflection.Common.Containers{
-public abstract class AsyncRepeater     {
+internal abstract class AsyncRepeater     {
 public abstract void Dispose();
     }
 }
@@ -239,7 +239,7 @@ public abstract void Dispose();
 
 // From 'EdgeCases.cs': 
 namespace Reflection.SomethingElse{
-public abstract class AnnoyingClass    {
+internal abstract class AnnoyingClass    {
         // Tricky case: expression bodied property
         public string MyExpressionProperty {get;set;}
 public abstract string AbstractMethod();

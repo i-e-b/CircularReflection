@@ -71,7 +71,7 @@ internal class AbstractifyRewriter : CSharpSyntaxRewriter
         if (next.Modifiers.All(m => m.Text != "public" )) return null; // remove non-public classes
 
         return next
-            .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.ParseToken("public "), SyntaxFactory.ParseToken("abstract "))) // replace all modifiers with `public abstract`
+            .WithModifiers(SyntaxFactory.TokenList(SyntaxFactory.ParseToken("internal "), SyntaxFactory.ParseToken("abstract "))) // replace all modifiers with `internal abstract`
             .WithBaseList(null); // remove base classes
     }
     
