@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <!-- A target that generates code, which is executed before the compilation -->
-    <Target Name="CircularReflectionTask" BeforeTargets="PrepareForBuild" Outputs="$(MSBuildProjectDirectory)\CircularReflection.generated.cs">
-        <CircularReflectionTask InputBaseName="$(ReflectionInputBase)" OutputBaseName="$(ReflectionOutputBase)" AdditionalUsingPaths="$(ReflectionAdditionalUsings)">
-            <Output TaskParameter="GeneratedFile" PropertyName="GeneratedClassesFile" />
+    <Target Name="CircularReflectionTask"
+            BeforeTargets="PrepareForBuild"
+            Outputs="$(MSBuildProjectDirectory)\CircularReflection.generated.cs">
+        
+        <CircularReflectionTask
+                InputBaseName="$(ReflectionInputBase)"
+                OutputBaseName="$(ReflectionOutputBase)"
+                AdditionalUsingPaths="$(ReflectionAdditionalUsings)"
+                IncludeNamespaceStubs="$(ReflectionNamespaceStubs)"
+                ExcludeUsingPaths="$(ReflectionExcludeUsings)">
+            <Output
+                    TaskParameter="GeneratedFile"
+                    PropertyName="GeneratedClassesFile" />
         </CircularReflectionTask>
         <ItemGroup>
             <Compile Remove="$(GeneratedClassesFile)" />

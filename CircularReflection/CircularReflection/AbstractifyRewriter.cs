@@ -46,9 +46,9 @@ internal class AbstractifyRewriter : CSharpSyntaxRewriter
     {
         // Add a prefix to namespaces to prevent collisions
         if (base.VisitNamespaceDeclaration(node) is not NamespaceDeclarationSyntax next) return null;
-        
-        return next
-            .WithName(SyntaxFactory.ParseName("Reflection." + next.Name));
+
+        return next;
+        //.WithName(SyntaxFactory.ParseName("Reflection." + next.Name));
     }
 
     public override SyntaxNode? VisitFileScopedNamespaceDeclaration(FileScopedNamespaceDeclarationSyntax node)
@@ -56,7 +56,7 @@ internal class AbstractifyRewriter : CSharpSyntaxRewriter
         // Change file-scoped namespace to block-scoped (as we may be merging multiple files with namespaces)
         if (base.VisitFileScopedNamespaceDeclaration(node) is not FileScopedNamespaceDeclarationSyntax next) return null;
 
-        var scoped = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(" Reflection." + next.Name));
+        var scoped = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(" " + next.Name));
         
         return scoped
             .WithOpenBraceToken(SyntaxFactory.ParseToken("{\r\n"))

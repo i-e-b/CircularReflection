@@ -5,8 +5,8 @@
         <Nullable>enable</Nullable>
         <LangVersion>10</LangVersion>
         
-        <Version>1.0.1</Version>
-        <AssemblyVersion>1.0.1</AssemblyVersion>
+        <Version>1.0.3</Version>
+        <AssemblyVersion>1.0.3</AssemblyVersion>
         <IsPackable>true</IsPackable>
         
         <Title>CircularReflection</Title>

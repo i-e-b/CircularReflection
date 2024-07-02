@@ -15,5 +15,6 @@
     <PropertyGroup>
         <ReflectionOutputBase Condition="'$(ReflectionOutputBase)' == ''">$(MSBuildProjectDirectory)\obj\</ReflectionOutputBase>
         <ReflectionAdditionalUsings Condition="'$(ReflectionAdditionalUsings)' == ''"> </ReflectionAdditionalUsings>
+        <ReflectionNamespaceStubs Condition="'$(ReflectionNamespaceStubs)' == ''">true</ReflectionNamespaceStubs>
     </PropertyGroup>
 </Project>
